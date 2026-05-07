@@ -1,48 +1,63 @@
-# Hermes Agent V2 Microkernel Architecture
+# Hermes Agent 性能与安全优化补丁 (Hermes V2 Microkernel)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **"极致的性能源于纯粹的安全与隔离。"** (Extreme performance stems from pure security and isolation.)
+这是一个为 [Hermes Agent](https://github.com/NousResearch/hermes-agent) 用户准备的“一键优化补丁包”。它能显著降低你的 API 消耗费用，解决后台工具残留问题，并提供企业级的数据安全保护。
 
-这是一个针对 [Hermes Agent](https://github.com/NousResearch/hermes-agent) 的“极客级”魔改底层配置架构（V2 微内核）。它由 AI 和人类经过十二轮“红蓝对抗”式的极限推演打磨而成。
+## 💡 这个补丁能帮你解决什么问题？
 
-## 🌟 核心特性 (Features)
+在使用 AI 智能体时，你可能会遇到以下三个痛点，而这个补丁完美解决了它们：
 
-### 1. 量子级防污染机制 (Auto-Heal Wrapper)
-当你敲击 `hermes chat` 时，系统底层的 Bash 解析器会以毫秒级的速度智能静默拦截，清理掉所有因断电、强杀等意外遗留的高耗能工具（MCP）状态，确保每一次会话都在 0 污染的微内核下启动。
-- **0 误杀率**：内置与 Python argparse 同等级别的微型位置参数解析器，完美绕过带有 `-m` 等参数旗标的假命令。
-- **UX 无感知**：重定向剥离了所有校验回显输出，真正的“幽灵刺客”。
+### 痛点 1：每次对话都在疯狂消耗 Token（烧钱太快）
+默认情况下，Hermes 可能会让一些耗费资源的插件（比如代码工具、浏览器插件）一直在后台待命，导致每次对话都会附带大量的系统背景字数。
+**✅ 补丁效果：** 采用了“按需唤醒”的微内核架构。主会话保持极简（Token 消耗暴降），只有在你明确需要时才会唤醒重型插件。
 
-### 2. 最小权限桥接 (Secure MCP Bridge)
-彻底废除了使用 `source ~/.env` 为子代理（Subagent）透传凭据的安全灾难。
-- **RCE 免疫**：采用纯正则 (`grep + sed`) 静默清洗并提取凭据，即使复制了包含恶意 `rm -rf` 注入的 `.env` 文本，也不会引发底层 Bash 代码的任意执行！
-- **401 容错**：通过强大的 `printf + sed` 去除不可见的单双引号与首尾隐形空格，完美防御 `xargs` 对转义符的致命吞噬。
+### 痛点 2：意外断电或强退导致工具关不掉
+如果你在让 AI 写代码或浏览网页时突然关掉终端，或者遇到了报错，后台的工具开关可能会卡在“开启”状态。下次你聊日常问题时，系统还在偷偷带着这些工具跑。
+**✅ 补丁效果：** 内置了“自动自愈拦截器”。以后每次你只要输入 `hermes chat` 发起新对话，它都会在毫秒间自动帮你做一次“大扫除”，强制关闭所有卡住的耗能工具，保证每次开局都是 0 污染。
 
-### 3. 深空记忆锁定 (Memory Context Optimization)
-把 Hermes 的记忆压缩算法微调至最优黄金分割：
-- `target_ratio: 0.5`
-- `threshold: 0.03`
+### 痛点 3：配置文件的安全隐患
+原版配置可能会让你把 API 密钥（比如 Minimax 的密钥）硬编码写在配置里，或者直接丢给外挂工具，这在网络安全上是极度危险的。
+**✅ 补丁效果：** 补丁会为你建立一个“安全桥接通道”。你的密码只会被保存在 `.env` 核心保险箱里。外挂插件只能拿到一张临时通行证，永远无法触碰你电脑上的其他机密数据。
 
-### 4. 逻辑悖论解环 (Bypass Mechanism)
-内置 `$HERMES_HEAL` 环境变量。如果你需要人工启动重型工具并开启主会话，只需输入 `HERMES_HEAL=0 hermes chat` 即可完美绕过自愈防线。
+---
 
-## 🚀 安装 (Installation)
+## 🛠️ 如何安装？（非常简单）
 
+如果你是小白，不需要懂任何复杂的代码，只需复制粘贴以下 3 行命令到你的终端中执行即可：
+
+**第一步：下载优化补丁**
 ```bash
-git clone https://github.com/your-username/hermes-v2-microkernel.git
+git clone https://github.com/Inmanager/hermes-v2-microkernel.git
 cd hermes-v2-microkernel
+```
+
+**第二步：运行一键安装脚本**
+```bash
 chmod +x install.sh
 ./install.sh
 ```
 
-重新加载终端：
+**第三步：刷新你的终端让补丁生效**
 ```bash
 source ~/.bashrc
 ```
+搞定！你现在的 Hermes Agent 已经装备了最强的底层优化装甲。
 
-## 🛠 原理与架构 (Architecture)
-微内核的本质在于**“冷热分离”**与**“子代理降权”**：
-主核心 `hermes chat` 始终保持绝对轻量，不再驻留庞大的浏览器插件（Puppeteer）与代码工作流（Minimax MCP）。只有当触发 `heavy-tool-subagent` 技能时，系统才会通过我们的桥接安全沙盒临时接管控制权。
+---
 
-## 📄 许可证 (License)
-MIT
+## 🎮 如何使用临时重型工具？（高级功能）
+
+由于现在系统默认是极简省钱模式，如果你今天**真的需要**让 AI 帮你写复杂代码或者使用重型工具，该怎么办呢？
+
+很简单，只需要在你平时启动对话的命令前面，加一句密码 `HERMES_HEAL=0` 即可：
+
+```bash
+HERMES_HEAL=0 hermes chat -q "帮我写一段贪吃蛇代码并运行"
+```
+加了这个密码，系统就会知道：“哦，主人这次需要火力全开”，它就会为你让路，不再拦截后台插件。
+
+---
+
+## 📄 许可证
+MIT License
