@@ -8,8 +8,15 @@ def _heal(*args, **kwargs) -> None:
         from hermes_cli.config import load_config, set_config_value
         cfg = load_config()
         changed = False
-        mcp = cfg.get("mcp_servers", {})
-        for server in ["minimax", "chrome-devtools"]:
+        mcp = cfg.get("mcp_servers") or {}
+        targets = [
+            "minimax",
+            "chrome-devtools",
+            "puppeteer",
+            "@modelcontextprotocol/server-puppeteer",
+            "puppeteer-mcp"
+        ]
+        for server in targets:
             if mcp.get(server, {}).get("enabled", False):
                 set_config_value(f"mcp_servers.{server}.enabled", "false")
                 changed = True
