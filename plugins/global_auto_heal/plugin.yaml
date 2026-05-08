@@ -1,5 +1,5 @@
 name: global_auto_heal
-version: 1.0.0
+version: 1.0.1
 description: "Global Auto-Heal Plugin for preventing heavy MCP persistence"
 hooks:
   - on_session_start

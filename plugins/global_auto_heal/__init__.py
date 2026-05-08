@@ -10,6 +10,8 @@ def _heal(*args, **kwargs) -> None:
     try:
         from hermes_cli.config import load_config, set_config_value
         cfg = load_config()
+        if not isinstance(cfg, dict):
+            cfg = {}
         changed = False
         mcp = cfg.get("mcp_servers")
         if not isinstance(mcp, dict):

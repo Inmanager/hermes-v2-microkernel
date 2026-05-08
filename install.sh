@@ -29,7 +29,7 @@ fi
         TARGET_KEY=$(echo "$TARGET_KEY" | tr -d ' ')
         if [ -n "$TARGET_KEY" ] && [ -z "${!TARGET_KEY}" ]; then
             # Extract the key safely WITHOUT using `source` to prevent arbitrary code execution from malicious .env payloads
-            RAW_KEY=$(grep -E "^(export[[:space:]]+)?${TARGET_KEY}=" ~/.hermes/.env 2>/dev/null | tail -n 1 | cut -d '=' -f2- | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+            RAW_KEY=$(grep -E "^(export[[:space:]]+)?${TARGET_KEY}=" "${HOME}/.hermes/.env" 2>/dev/null | tail -n 1 | cut -d '=' -f2- | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
             export "${TARGET_KEY}=${RAW_KEY}"
         fi
     done
@@ -103,10 +103,10 @@ hermes() {
             done
         fi
         if [[ "$is_chat" == true && -n "$HERMES_HEAVY_MCPS" ]]; then
-            # Fast-path: Only execute CLI config resets if there is a risk of dirty config (enabled: true/\"true\" exists)
+            # Fast-path: Only execute CLI config resets if there is a risk of dirty config (enabled: true/"true" exists)
             if grep -qiE "enabled:[[:space:]]*['\"]?true['\"]?" "$HOME/.hermes/config.yaml" 2>/dev/null; then
                 printf '%s\n' "$HERMES_HEAVY_MCPS" | tr -d ' ' | tr ',' '\n' | while read -r target; do
-                    if [[ -n "$target" ]] && grep -q "$target" "$HOME/.hermes/config.yaml" 2>/dev/null; then
+                    if [[ -n "$target" ]] && grep -A 10 -E "^[[:space:]]*${target}:" "$HOME/.hermes/config.yaml" 2>/dev/null | grep -qiE "enabled:[[:space:]]*['\"]?true['\"]?"; then
                         command hermes config set "mcp_servers.${target}.enabled" false >/dev/null 2>&1
                     fi
                 done
