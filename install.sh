@@ -21,20 +21,19 @@ if [ "$#" -lt 2 ]; then
     exit 1
 fi
 
-TARGET_KEY="$1"
-shift
-
-    # Extract the key safely WITHOUT using `source` to prevent arbitrary code execution from malicious .env payloads
-    # Also support `.env` files that have `export KEY=VALUE` syntax, and take the last match if duplicated
-    # Strip carriage returns (CRLF) to prevent issues with files created on Windows
-    # Trim leading/trailing spaces FIRST, then strip quotes, to handle lines like `KEY="val" ` properly
-    RAW_KEY=$(grep -E "^(export[[:space:]]+)?${TARGET_KEY}=" ~/.hermes/.env 2>/dev/null | tail -n 1 | cut -d '=' -f2- | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
-    export "${TARGET_KEY}=${RAW_KEY}"
-
-# Specific handling for known services if needed (e.g. Minimax needs a specific API Host)
-if [ "$TARGET_KEY" = "MINIMAX_API_KEY" ]; then
-    export MINIMAX_API_HOST=https://api.minimaxi.com/v1
-fi
+    # Support multiple keys separated by comma, e.g., KEY1,KEY2
+    # Since this script is #!/bin/bash, we can use bash features safely.
+    IFS=',' read -ra KEYS <<< "$1"
+    for TARGET_KEY in "${KEYS[@]}"; do
+        # Trim whitespace
+        TARGET_KEY=$(echo "$TARGET_KEY" | tr -d ' ')
+        if [ -n "$TARGET_KEY" ] && [ -z "${!TARGET_KEY}" ]; then
+            # Extract the key safely WITHOUT using `source` to prevent arbitrary code execution from malicious .env payloads
+            RAW_KEY=$(grep -E "^(export[[:space:]]+)?${TARGET_KEY}=" ~/.hermes/.env 2>/dev/null | tail -n 1 | cut -d '=' -f2- | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+            export "${TARGET_KEY}=${RAW_KEY}"
+        fi
+    done
+    shift
 
 # Execute the MCP server
 exec "$@"
@@ -71,10 +70,10 @@ hermes() {
             done
         fi
         if [[ "$is_chat" == true && -n "$HERMES_HEAVY_MCPS" ]]; then
-            # Fast-path: Only execute CLI config resets if there is a risk of dirty config to avoid startup delay
-            if grep -qiE "enabled:\s*['\"]?true['\"]?" "$HOME/.hermes/config.yaml" 2>/dev/null; then
-                printf '%s\n' "$HERMES_HEAVY_MCPS" | tr ',' '\n' | while read -r target; do
-                    if [[ -n "$target" ]]; then
+            # Fast-path: Only execute CLI config resets if the target tool is actually present in the config
+            if grep -q "mcp_servers:" "$HOME/.hermes/config.yaml" 2>/dev/null; then
+                printf '%s\n' "$HERMES_HEAVY_MCPS" | tr -d ' ' | tr ',' '\n' | while read -r target; do
+                    if [[ -n "$target" ]] && grep -q "$target" "$HOME/.hermes/config.yaml" 2>/dev/null; then
                         command hermes config set "mcp_servers.${target}.enabled" false >/dev/null 2>&1
                     fi
                 done
@@ -97,7 +96,7 @@ if command -v hermes >/dev/null 2>&1; then
     echo "✅ Compression parameters optimized via Hermes CLI."
 elif [ -f "${HERMES_DIR}/config.yaml" ]; then
     tmp_config=$(mktemp)
-    sed 's/target_ratio: .*/target_ratio: 0.5/g; s/threshold: .*/threshold: 0.03/g' "${HERMES_DIR}/config.yaml" > "$tmp_config"
+    sed -e 's/^\([[:space:]]*\)target_ratio: .*/\1target_ratio: 0.5/g' -e 's/^\([[:space:]]*\)threshold: .*/\1threshold: 0.03/g' "${HERMES_DIR}/config.yaml" > "$tmp_config"
     cat "$tmp_config" > "${HERMES_DIR}/config.yaml"
     rm -f "$tmp_config"
     echo "✅ Compression parameters optimized via fallback sed."

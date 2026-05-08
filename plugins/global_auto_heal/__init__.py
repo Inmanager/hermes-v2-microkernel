@@ -11,7 +11,9 @@ def _heal(*args, **kwargs) -> None:
         from hermes_cli.config import load_config, set_config_value
         cfg = load_config()
         changed = False
-        mcp = cfg.get("mcp_servers") or {}
+        mcp = cfg.get("mcp_servers")
+        if not isinstance(mcp, dict):
+            mcp = {}
         # Extract targets from environment variable or use default
         env_targets = os.environ.get("HERMES_HEAVY_MCPS")
         if env_targets:
