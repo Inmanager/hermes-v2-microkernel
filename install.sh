@@ -5,7 +5,6 @@ set -e
 echo "🚀 Installing Hermes V2 Microkernel Architecture..."
 
 HERMES_DIR="${HOME}/.hermes"
-BASHRC="${HOME}/.bashrc"
 BRIDGE_SCRIPT="${HERMES_DIR}/secure-mcp-wrapper.sh"
 
 # 1. Create the General Secure MCP Bridge Script
@@ -40,10 +39,21 @@ exec "$@"
 EOF
 chmod +x "${BRIDGE_SCRIPT}"
 
-# 2. Inject the Bash Wrapper
-echo "🛡️ Injecting Anti-Pollution Bash Wrapper into ~/.bashrc..."
-if ! grep -q "# Hermes Auto-Heal Wrapper" "${BASHRC}"; then
-cat >> "${BASHRC}" << 'EOF'
+# 2. Inject the Bash/Zsh Wrapper
+echo "🛡️ Injecting Anti-Pollution Wrapper into shell configs..."
+
+RC_FILES=()
+[ -f "${HOME}/.bashrc" ] && RC_FILES+=("${HOME}/.bashrc")
+[ -f "${HOME}/.zshrc" ] && RC_FILES+=("${HOME}/.zshrc")
+# Fallback to .bashrc if neither exists
+if [ ${#RC_FILES[@]} -eq 0 ]; then
+    RC_FILES+=("${HOME}/.bashrc")
+fi
+
+for RC_FILE in "${RC_FILES[@]}"; do
+    if ! grep -q "# Hermes Auto-Heal Wrapper" "${RC_FILE}"; then
+        echo "   -> Injecting into ${RC_FILE}..."
+        cat >> "${RC_FILE}" << 'EOF'
 
 # Hermes Auto-Heal Wrapper (V2 Microkernel)
 # Make sure to set HERMES_HEAVY_MCPS="minimax,chrome-devtools" in your environment if you want to block heavy tools.
@@ -73,16 +83,17 @@ hermes() {
     command hermes "$@"
 }
 EOF
-else
-    echo "⚠️ Bash wrapper already exists, skipping."
-fi
+    else
+        echo "⚠️ Wrapper already exists in ${RC_FILE}, skipping."
+    fi
+done
 
-# 3. Patch config.yaml safely
+# 3. Patch config.yaml safely (Cross-Platform compatibility for sed)
 echo "⚙️ Optimizing config.yaml settings..."
 if [ -f "${HERMES_DIR}/config.yaml" ]; then
-    # We use sed to safely update properties if they exist
-    sed -i 's/target_ratio: .*/target_ratio: 0.5/g' "${HERMES_DIR}/config.yaml"
-    sed -i 's/threshold: .*/threshold: 0.03/g' "${HERMES_DIR}/config.yaml"
+    tmp_config=$(mktemp)
+    sed 's/target_ratio: .*/target_ratio: 0.5/g; s/threshold: .*/threshold: 0.03/g' "${HERMES_DIR}/config.yaml" > "$tmp_config"
+    mv "$tmp_config" "${HERMES_DIR}/config.yaml"
     echo "✅ Compression parameters optimized."
 else
     echo "⚠️ config.yaml not found, please configure Hermes first."
