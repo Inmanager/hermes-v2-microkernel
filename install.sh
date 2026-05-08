@@ -73,4 +73,15 @@ else
     echo "⚠️ Skills directory not found in repository."
 fi
 
+# 5. Install Global Auto-Heal Plugin
+echo "🔌 Installing Global Auto-Heal Plugin for cross-platform protection..."
+if [ -d "plugins" ]; then
+    mkdir -p "${HERMES_DIR}/hermes-agent/plugins/"
+    cp -r plugins/* "${HERMES_DIR}/hermes-agent/plugins/"
+    command hermes plugins enable global_auto_heal >/dev/null 2>&1
+    echo "✅ Global Auto-Heal plugin installed and enabled."
+else
+    echo "⚠️ Plugins directory not found in repository."
+fi
+
 echo "🎉 Installation Complete! Please run 'source ~/.bashrc' or restart your terminal."

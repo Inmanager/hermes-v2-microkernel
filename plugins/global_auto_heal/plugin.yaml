@@ -1,0 +1,8 @@
+name: global_auto_heal
+version: 1.0.0
+description: "V2 Microkernel Auto-Heal: Forcibly disables heavy MCP servers on session start and end to ensure zero token pollution globally."
+hooks:
+  - on_session_reset
+  - on_session_start
+  - on_session_end
+  - on_session_finalize
