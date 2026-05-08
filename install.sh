@@ -71,9 +71,9 @@ hermes() {
         if [[ "$is_chat" == true && -n "$HERMES_HEAVY_MCPS" ]]; then
             # Use tr to split and iterate over targets to be compatible with both Bash and Zsh word splitting behaviors
             for target in $(echo "$HERMES_HEAVY_MCPS" | tr ',' ' '); do
-                # Trim whitespace (if any remain)
+                # Trim whitespace (if any remain) and strip potential wildcard expansion
                 target=$(echo "$target" | xargs)
-                if [[ -n "$target" ]]; then
+                if [[ -n "$target" && "$target" != \** ]]; then
                     command hermes config set "mcp_servers.${target}.enabled" false >/dev/null 2>&1
                 fi
             done
