@@ -69,10 +69,9 @@ hermes() {
             done
         fi
         if [[ "$is_chat" == true && -n "$HERMES_HEAVY_MCPS" ]]; then
-            # Temporarily set IFS to comma to split the targets
-            local IFS=','
-            for target in $HERMES_HEAVY_MCPS; do
-                # Trim whitespace
+            # Use tr to split and iterate over targets to be compatible with both Bash and Zsh word splitting behaviors
+            for target in $(echo "$HERMES_HEAVY_MCPS" | tr ',' ' '); do
+                # Trim whitespace (if any remain)
                 target=$(echo "$target" | xargs)
                 if [[ -n "$target" ]]; then
                     command hermes config set "mcp_servers.${target}.enabled" false >/dev/null 2>&1
@@ -119,4 +118,4 @@ else
     echo "⚠️ Plugins directory not found in repository."
 fi
 
-echo "🎉 Installation Complete! Please run 'source ~/.bashrc' or restart your terminal."
+echo "🎉 Installation Complete! Please restart your terminal, or source your shell configuration file (e.g., 'source ~/.bashrc' or 'source ~/.zshrc')."
