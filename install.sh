@@ -52,10 +52,28 @@ if [ ${#RC_FILES[@]} -eq 0 ]; then
 fi
 
 for RC_FILE in "${RC_FILES[@]}"; do
-    if ! grep -q "# Hermes Auto-Heal Wrapper" "${RC_FILE}" 2>/dev/null; then
+    if grep -q "# Hermes Auto-Heal Wrapper" "${RC_FILE}" 2>/dev/null; then
+        echo "   -> Updating existing wrapper in ${RC_FILE}..."
+        tmp_rc=$(mktemp)
+        awk '
+          BEGIN { in_wrapper = 0 }
+          /^# Hermes Auto-Heal Wrapper/ || /^# --- BEGIN HERMES AUTO-HEAL WRAPPER ---/ { in_wrapper = 1 }
+          in_wrapper {
+            if (/^}$/ || /^# --- END HERMES AUTO-HEAL WRAPPER ---/) { 
+                in_wrapper = 0 
+            }
+            next
+          }
+          { print }
+        ' "${RC_FILE}" > "$tmp_rc"
+        cat "$tmp_rc" > "${RC_FILE}"
+        rm -f "$tmp_rc"
+    else
         echo "   -> Injecting into ${RC_FILE}..."
-        cat >> "${RC_FILE}" << 'EOF'
+    fi
+    cat >> "${RC_FILE}" << 'EOF'
 
+# --- BEGIN HERMES AUTO-HEAL WRAPPER ---
 # Hermes Auto-Heal Wrapper (V2 Microkernel)
 # Make sure to set HERMES_HEAVY_MCPS="minimax,chrome-devtools" in your environment if you want to block heavy tools.
 hermes() {
@@ -82,10 +100,8 @@ hermes() {
     fi
     command hermes "$@"
 }
+# --- END HERMES AUTO-HEAL WRAPPER ---
 EOF
-    else
-        echo "⚠️ Wrapper already exists in ${RC_FILE}, skipping."
-    fi
 done
 
 # 3. Patch config.yaml safely (Use CLI if available, fallback to safe sed)
