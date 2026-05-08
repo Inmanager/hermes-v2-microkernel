@@ -88,7 +88,7 @@ hermes() {
             done
         fi
         if [[ "$is_chat" == true && -n "$HERMES_HEAVY_MCPS" ]]; then
-            # Fast-path: Only execute CLI config resets if there is a risk of dirty config (enabled: true exists)
+            # Fast-path: Only execute CLI config resets if there is a risk of dirty config (enabled: true/\"true\" exists)
             if grep -qiE "enabled:[[:space:]]*['\"]?true['\"]?" "$HOME/.hermes/config.yaml" 2>/dev/null; then
                 printf '%s\n' "$HERMES_HEAVY_MCPS" | tr -d ' ' | tr ',' '\n' | while read -r target; do
                     if [[ -n "$target" ]] && grep -q "$target" "$HOME/.hermes/config.yaml" 2>/dev/null; then
