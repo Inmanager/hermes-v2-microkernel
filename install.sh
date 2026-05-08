@@ -53,7 +53,7 @@ if [ ${#RC_FILES[@]} -eq 0 ]; then
 fi
 
 for RC_FILE in "${RC_FILES[@]}"; do
-    if ! grep -q "# Hermes Auto-Heal Wrapper" "${RC_FILE}"; then
+    if ! grep -q "# Hermes Auto-Heal Wrapper" "${RC_FILE}" 2>/dev/null; then
         echo "   -> Injecting into ${RC_FILE}..."
         cat >> "${RC_FILE}" << 'EOF'
 
@@ -71,11 +71,14 @@ hermes() {
             done
         fi
         if [[ "$is_chat" == true && -n "$HERMES_HEAVY_MCPS" ]]; then
-            echo "$HERMES_HEAVY_MCPS" | tr ',' '\n' | while read -r target; do
-                if [[ -n "$target" ]]; then
-                    command hermes config set "mcp_servers.${target}.enabled" false >/dev/null 2>&1
-                fi
-            done
+            # Fast-path: Only execute CLI config resets if there is a risk of dirty config to avoid startup delay
+            if grep -qE "enabled:\s*true" "$HOME/.hermes/config.yaml" 2>/dev/null; then
+                printf '%s\n' "$HERMES_HEAVY_MCPS" | tr ',' '\n' | while read -r target; do
+                    if [[ -n "$target" ]]; then
+                        command hermes config set "mcp_servers.${target}.enabled" false >/dev/null 2>&1
+                    fi
+                done
+            fi
         fi
     fi
     command hermes "$@"
@@ -91,7 +94,9 @@ echo "⚙️ Optimizing config.yaml settings..."
 if [ -f "${HERMES_DIR}/config.yaml" ]; then
     tmp_config=$(mktemp)
     sed 's/target_ratio: .*/target_ratio: 0.5/g; s/threshold: .*/threshold: 0.03/g' "${HERMES_DIR}/config.yaml" > "$tmp_config"
-    mv "$tmp_config" "${HERMES_DIR}/config.yaml"
+    # Use cat instead of mv to preserve the original file's permissions and ownership (mktemp creates 0600)
+    cat "$tmp_config" > "${HERMES_DIR}/config.yaml"
+    rm -f "$tmp_config"
     echo "✅ Compression parameters optimized."
 else
     echo "⚠️ config.yaml not found, please configure Hermes first."
