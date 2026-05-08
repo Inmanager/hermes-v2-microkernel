@@ -23,8 +23,9 @@ def _heal(*args, **kwargs) -> None:
         if not targets:
             return
         for server in targets:
-            if mcp.get(server, {}).get("enabled", False):
-                set_config_value(f"mcp_servers.{server}.enabled", "false")
+            server_cfg = mcp.get(server)
+            if isinstance(server_cfg, dict) and server_cfg.get("enabled", False):
+                set_config_value(f"mcp_servers.{server}.enabled", False)
                 changed = True
         if changed:
             logger.info("[Global Auto-Heal] Successfully blocked heavy MCP servers.")

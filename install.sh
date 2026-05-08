@@ -70,17 +70,17 @@ hermes() {
             done
         fi
         if [[ "$is_chat" == true && -n "$HERMES_HEAVY_MCPS" ]]; then
-            # Use tr to split and iterate over targets to be compatible with both Bash and Zsh word splitting behaviors
+            # Temporarily disable globbing to prevent wildcard expansion
+            local old_state=$-
+            set -f
+            # Word splitting automatically trims spaces when iterating
             for target in $(echo "$HERMES_HEAVY_MCPS" | tr ',' ' '); do
-                # Trim whitespace (if any remain) and strip potential wildcard expansion
-                # We turn off globbing to safely process target names that might contain wildcards (though rare for tool names)
-                set -f
-                target=$(echo "$target" | xargs)
-                set +f
                 if [[ -n "$target" ]]; then
                     command hermes config set "mcp_servers.${target}.enabled" false >/dev/null 2>&1
                 fi
             done
+            # Restore previous globbing state
+            if [[ $old_state != *f* ]]; then set +f; fi
         fi
     fi
     command hermes "$@"
@@ -105,6 +105,7 @@ fi
 # 4. Install Microkernel Skills
 echo "🧠 Installing Microkernel Architecture Skills..."
 if [ -d "skills" ]; then
+    mkdir -p "${HERMES_DIR}/skills/"
     cp -r skills/* "${HERMES_DIR}/skills/"
     echo "✅ Sub-agent and Maintenance skills installed."
 else
@@ -116,7 +117,7 @@ echo "🔌 Installing Global Auto-Heal Plugin for cross-platform protection..."
 if [ -d "plugins" ]; then
     mkdir -p "${HERMES_DIR}/hermes-agent/plugins/"
     cp -r plugins/* "${HERMES_DIR}/hermes-agent/plugins/"
-    command hermes plugins enable global_auto_heal >/dev/null 2>&1
+    command hermes plugins enable global_auto_heal >/dev/null 2>&1 || true
     echo "✅ Global Auto-Heal plugin installed and enabled."
 else
     echo "⚠️ Plugins directory not found in repository."
