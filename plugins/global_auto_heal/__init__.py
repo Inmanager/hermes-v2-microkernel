@@ -15,7 +15,7 @@ def _heal(*args, **kwargs) -> None:
         # Extract targets from environment variable or use default
         env_targets = os.environ.get("HERMES_HEAVY_MCPS")
         if env_targets:
-            targets = [t.strip() for t in env_targets.split(",")]
+            targets = [t.strip() for t in env_targets.split(",") if t.strip()]
         else:
             # If not specified, do not block any to prevent breaking other users' setups
             targets = []
