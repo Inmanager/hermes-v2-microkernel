@@ -24,11 +24,12 @@ fi
 TARGET_KEY="$1"
 shift
 
-# Extract the key safely WITHOUT using `source` to prevent arbitrary code execution from malicious .env payloads
-# Also support `.env` files that have `export KEY=VALUE` syntax, and take the last match if duplicated
-RAW_KEY=$(grep -E "^(export[[:space:]]+)?${TARGET_KEY}=" ~/.hermes/.env 2>/dev/null | tail -n 1 | cut -d '=' -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
-# Strip accidental trailing/leading whitespaces safely
-export "${TARGET_KEY}=$(printf '%s\n' "$RAW_KEY" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+    # Extract the key safely WITHOUT using `source` to prevent arbitrary code execution from malicious .env payloads
+    # Also support `.env` files that have `export KEY=VALUE` syntax, and take the last match if duplicated
+    # Strip carriage returns (CRLF) to prevent issues with files created on Windows
+    RAW_KEY=$(grep -E "^(export[[:space:]]+)?${TARGET_KEY}=" ~/.hermes/.env 2>/dev/null | tail -n 1 | cut -d '=' -f2- | tr -d '\r' | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+    # Strip accidental trailing/leading whitespaces safely
+    export "${TARGET_KEY}=$(printf '%s\n' "$RAW_KEY" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 
 # Specific handling for known services if needed (e.g. Minimax needs a specific API Host)
 if [ "$TARGET_KEY" = "MINIMAX_API_KEY" ]; then
@@ -70,17 +71,11 @@ hermes() {
             done
         fi
         if [[ "$is_chat" == true && -n "$HERMES_HEAVY_MCPS" ]]; then
-            # Temporarily disable globbing to prevent wildcard expansion
-            local old_state=$-
-            set -f
-            # Word splitting automatically trims spaces when iterating
-            for target in $(echo "$HERMES_HEAVY_MCPS" | tr ',' ' '); do
+            echo "$HERMES_HEAVY_MCPS" | tr ',' '\n' | while read -r target; do
                 if [[ -n "$target" ]]; then
                     command hermes config set "mcp_servers.${target}.enabled" false >/dev/null 2>&1
                 fi
             done
-            # Restore previous globbing state
-            if [[ $old_state != *f* ]]; then set +f; fi
         fi
     fi
     command hermes "$@"
