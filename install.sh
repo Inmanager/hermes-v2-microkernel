@@ -64,4 +64,13 @@ else
     echo "⚠️ config.yaml not found, please configure Hermes first."
 fi
 
+# 4. Install Microkernel Skills
+echo "🧠 Installing Microkernel Architecture Skills..."
+if [ -d "skills" ]; then
+    cp -r skills/* "${HERMES_DIR}/skills/"
+    echo "✅ Sub-agent and Maintenance skills installed."
+else
+    echo "⚠️ Skills directory not found in repository."
+fi
+
 echo "🎉 Installation Complete! Please run 'source ~/.bashrc' or restart your terminal."
