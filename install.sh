@@ -25,7 +25,8 @@ TARGET_KEY="$1"
 shift
 
 # Extract the key safely WITHOUT using `source` to prevent arbitrary code execution from malicious .env payloads
-RAW_KEY=$(grep -E "^${TARGET_KEY}=" ~/.hermes/.env 2>/dev/null | cut -d '=' -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+# Also support `.env` files that have `export KEY=VALUE` syntax
+RAW_KEY=$(grep -E "^(export[[:space:]]+)?${TARGET_KEY}=" ~/.hermes/.env 2>/dev/null | cut -d '=' -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
 # Strip accidental trailing/leading whitespaces safely
 export "${TARGET_KEY}=$(printf '%s\n' "$RAW_KEY" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 
