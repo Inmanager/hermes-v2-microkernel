@@ -30,19 +30,21 @@
 
 ## 🛠️ 如何安装？（极简部署）
 
-如果你是小白，直接复制以下 3 行命令到终端中执行即可：
+## Installation
 
-**第一步：下载微内核架构包**
+1. Clone the repository and run the installation script:
 ```bash
 git clone https://github.com/Inmanager/hermes-v2-microkernel.git
 cd hermes-v2-microkernel
-```
-
-**第二步：运行一键安装脚本**
-```bash
-chmod +x install.sh
 ./install.sh
 ```
+
+2. **Crucial Configuration for Auto-Heal Mechanism**: The V2 microkernel blocks heavy MCP servers during generic CLI tasks to save tokens and maintain a clean context. **You must define which MCP servers are considered "heavy" in your environment.**
+Add the `HERMES_HEAVY_MCPS` environment variable to your shell configuration file (e.g., `~/.bashrc` or `~/.zshrc`). It should be a comma-separated list of the tool names.
+```bash
+export HERMES_HEAVY_MCPS="minimax,chrome-devtools,puppeteer"
+```
+If you do not set this variable, the Auto-Heal mechanism will safely bypass interception and assume no tools need to be blocked, avoiding disruption to normal users.
 
 **第三步：刷新你的终端让补丁生效**
 ```bash
