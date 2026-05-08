@@ -28,7 +28,7 @@ shift
 # Extract the key safely WITHOUT using `source` to prevent arbitrary code execution from malicious .env payloads
 RAW_KEY=$(grep -E "^${TARGET_KEY}=" ~/.hermes/.env 2>/dev/null | cut -d '=' -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
 # Strip accidental trailing/leading whitespaces safely
-export ${TARGET_KEY}=$(printf '%s\n' "$RAW_KEY" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+export "${TARGET_KEY}=$(printf '%s\n' "$RAW_KEY" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 
 # Specific handling for known services if needed (e.g. Minimax needs a specific API Host)
 if [ "$TARGET_KEY" = "MINIMAX_API_KEY" ]; then
