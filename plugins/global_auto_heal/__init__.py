@@ -27,7 +27,9 @@ def _heal(*args, **kwargs) -> None:
         for server in targets:
             server_cfg = mcp.get(server)
             if isinstance(server_cfg, dict) and server_cfg.get("enabled", False):
-                set_config_value(f"mcp_servers.{server}.enabled", False)
+                # We want to change the config dict directly and save it or use set_config_value with str type.
+                # Since set_config_value expects str for value, we must pass "false" not False!
+                set_config_value(f"mcp_servers.{server}.enabled", "false")
                 changed = True
         if changed:
             logger.info("[Global Auto-Heal] Successfully blocked heavy MCP servers.")
