@@ -56,13 +56,28 @@ for RC_FILE in "${RC_FILES[@]}"; do
         echo "   -> Updating existing wrapper in ${RC_FILE}..."
         tmp_rc=$(mktemp)
         awk '
-          BEGIN { in_wrapper = 0 }
-          /^# Hermes Auto-Heal Wrapper/ || /^# --- BEGIN HERMES AUTO-HEAL WRAPPER ---/ { in_wrapper = 1 }
+          BEGIN { in_wrapper = 0; new_format = 0 }
+          /^# --- BEGIN HERMES AUTO-HEAL WRAPPER ---/ {
+              in_wrapper = 1
+              new_format = 1
+              next
+          }
+          /^# Hermes Auto-Heal Wrapper/ && in_wrapper == 0 {
+              in_wrapper = 1
+              new_format = 0
+              next
+          }
           in_wrapper {
-            if (/^}$/ || /^# --- END HERMES AUTO-HEAL WRAPPER ---/) { 
-                in_wrapper = 0 
-            }
-            next
+              if (new_format == 1) {
+                  if (/^# --- END HERMES AUTO-HEAL WRAPPER ---/) {
+                      in_wrapper = 0
+                  }
+              } else {
+                  if (/^}$/) {
+                      in_wrapper = 0
+                  }
+              }
+              next
           }
           { print }
         ' "${RC_FILE}" > "$tmp_rc"
