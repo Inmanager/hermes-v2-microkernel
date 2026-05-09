@@ -1,5 +1,7 @@
 # Hermes V2 Microkernel
 
+[English](README.md) | [中文版](README_zh.md)
+
 Hermes V2 Microkernel is a lightweight, secure, and resilient architecture designed for Hermes Agent. It provides robust environmental protection, global auto-healing, and optimized configuration management to ensure a stable agent environment.
 
 ## Features

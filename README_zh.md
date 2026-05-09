@@ -1,5 +1,7 @@
 # Hermes V2 微内核 (Microkernel)
 
+[English](README.md) | [中文版](README_zh.md)
+
 Hermes V2 微内核是为 Hermes Agent 设计的轻量级、安全且极具韧性的基础架构。它提供强大的环境防护、全局自愈能力以及优化的配置管理，确保智能体运行环境的绝对稳定。
 
 ## 核心特性
