@@ -2,7 +2,22 @@
 
 [English](README.md) | [中文版](README_zh.md)
 
-Hermes V2 Microkernel is a lightweight, secure, and resilient architecture designed for Hermes Agent. It provides robust environmental protection, global auto-healing, and optimized configuration management to ensure a stable agent environment.
+Hermes V2 Microkernel is a lightweight, secure, and resilient architecture designed for Hermes Agent. 
+
+### 🎯 Core Goal: Drastically Reduce Token Consumption
+In traditional AI Agent setups, every single interaction sends all tool descriptions, numerous predefined skills, and lengthy system prompts to the LLM. This leads to bloated context windows, enormous token consumption, high costs, and slower response times.
+
+**How does this project solve the problem? (A Beginner's Guide)**
+
+1. **On-Demand Tool Loading (via MCP)**:
+   Instead of feeding all tool descriptions to the AI at once, the Microkernel acts as a dispatcher. It dynamically loads the specific tool capability via the Model Context Protocol (MCP) *only* when the AI actually needs to perform a task. Once the task is done, the tool context is released, keeping the active memory clean.
+
+2. **Migrating "Skills" into MemPalace**:
+   Complex operational manuals and workflow procedures (Skills) that the AI used to memorize in the main prompt are now extracted and stored in a dedicated memory system called MemPalace. When the AI faces a specific scenario, the Microkernel retrieves just the relevant snippet of knowledge. This keeps the main LLM context extremely lean.
+
+By implementing this "On-Demand Loading + Memory Offloading" mechanism, the Microkernel prevents context bloat and **drastically reduces token costs per conversation**.
+
+Additionally, it provides robust environmental protection, global auto-healing, and optimized configuration management to ensure a stable agent environment.
 
 ## Features
 
